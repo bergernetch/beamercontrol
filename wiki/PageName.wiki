@@ -1,0 +1,16 @@
+#summary beamer control wiki
+#labels Phase-Requirements
+= Introduction =
+
+This is a beamer with this Software. Compatible with ASK/INFOCUS beamers with build-in network cards. It's possible to write you own plugin for your own beamer, which can be controlled via network or usb, or serial - whatever you can code ;-)
+
+= Status =
+  * core: created
+  * Infocus plugin
+    * commands: partly
+    * network client: planning
+  * automatic loading of plugins: future
+
+= Roadmap =
+  * create GUI 
+  * implement network client part of Infocus plugin
