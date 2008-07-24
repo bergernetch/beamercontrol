@@ -1,9 +1,6 @@
-package ch.bergernet.beamerSimulator;
+package ch.bergernet.plugins.infocus;
 
-import ch.bergernet.beamerControl.InputSelector;
-import ch.bergernet.beamerControl.PowerState;
-
-public class BeamerSimulator {
+public class InfocusSimulator {
 
 	int powerState = PowerState.POWER_ON;
 	int freezeState = 0;
