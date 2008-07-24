@@ -6,9 +6,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-public class BeamerEmulator {
+public class BeamerServer {
 		   public static void main(String[] args) {
-			   BeamerEmulator server = new BeamerEmulator();
+			   BeamerServer server = new BeamerServer();
 		        try {
 		            server.test();
 		        } catch (IOException e) {
