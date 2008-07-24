@@ -16,3 +16,6 @@ Implemented in Java -> plattform independant.
 = Roadmap =
   * create GUI 
   * implement network client part of Infocus plugin
+
+24.07.2008:
+I finally installed subversive into my eclispe and put the code into the svn repository.
