@@ -1,31 +1,25 @@
-/**
- * 
- */
 package ch.bergernet.plugins.infocus;
 
 import java.io.IOException;
 import java.net.URI;
 
 import ch.bergernet.beamerControl.BeamerControlPlugin;
-import ch.bergernet.beamerControl.CommandResult;
-import ch.bergernet.beamerControl.ConnectionState;
-import ch.bergernet.beamerControl.InputSelector;
-import ch.bergernet.beamerControl.InterfaceInfo;
-import ch.bergernet.beamerControl.PowerState;
+import ch.bergernet.beamerControl.ICommandResult;
+import ch.bergernet.beamerControl.IConnectionState;
+import ch.bergernet.beamerControl.IInputSelector;
+import ch.bergernet.beamerControl.IInterfaceInfo;
+import ch.bergernet.beamerControl.IPowerState;
 import ch.bergernet.beamerSimulator.BeamerSimulator;
 
-/**
- * @author dani
- *
- */
 public class InfocusControlPlugin implements BeamerControlPlugin {
 
-	ConnectionState conState = new ConnectionState();
-	InputSelector inputSelector = new InputSelector();
-	InterfaceInfo ifaceInfo = new InterfaceInfo();
-	PowerState powerState = new PowerState();
+	IConnectionState conState = new ConnectionState();
+	IInputSelector inputSelector = new InputSelector();
+	IInterfaceInfo ifaceInfo = new InterfaceInfo();
+	IPowerState powerState = new PowerState();
 	boolean freezeFlag = false;
 	String beamerModel = "";
+	URI uri;
 	
 	final static String readCmd = "?)";
 	final static String powerCmd = "(PWR";
@@ -35,7 +29,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	
 	final static String[] supportedModels = { "ASK>","Beamer Simulator 0.0.1"};
 	
-	final static boolean SIMULATE = false;
+	final static boolean SIMULATE = true;
 
 	BeamerSimulator simulator;
 	TCPClient beamerClient = new TCPClient();
@@ -43,13 +37,18 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	/* (non-Javadoc)
 	 * @see ch.bergernet.BeamerControlPlugin#connect(java.lang.String)
 	 */
-	public boolean connect(String connectionURI) {
+	public boolean connect(String newConnectionURI) {
 		if(conState.isConnected()){
 			disconnect();
 		}
 		
-		URI uri = URI.create(connectionURI);
-		System.out.println(uri.getHost());
+		try {
+			uri = URI.create(newConnectionURI);
+			System.out.println("will try to connect to: " + uri.getHost());
+		} catch (Exception e) {
+			System.out.println(e.getLocalizedMessage());
+			return false;
+		}
 		
 		if(uri.getScheme().equalsIgnoreCase("tcp")){
 			
@@ -61,9 +60,10 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 			} else {
 		        try {
 		        	beamerClient.connect("localhost",8888);
-		            //client.send("hehe Test");
+		            //beamerClient.send("hehe Test");
 					ifaceInfo.setInterfaceInfo("connected to beamer: " + beamerClient.getInfo());
 		        } catch (IOException e) {
+		        	System.out.println("connect failed: " + e.getLocalizedMessage());
 		            e.printStackTrace();
 		        }
 			}
@@ -103,7 +103,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	/* (non-Javadoc)
 	 * @see ch.bergernet.BeamerControlPlugin#getConnectionState()
 	 */
-	public ConnectionState getConnectionState() {
+	public IConnectionState getConnectionState() {
 		return conState;
 	}
 
@@ -112,7 +112,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	 * "(FRZ?)" --> "(FRZ?)(0-1,0)"
 	 */
 	public boolean getFreeze() {
-		CommandResult cmdResult = sendCommand(freezeCmd.concat(readCmd));
+		ICommandResult cmdResult = sendCommand(freezeCmd.concat(readCmd));
 		freezeFlag = cmdResult.getValueAsBoolean();
 		return freezeFlag;
 	}
@@ -120,8 +120,8 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	/* (non-Javadoc)
 	 * @see ch.bergernet.BeamerControlPlugin#getInput()
 	 */
-	public InputSelector getInput() {
-		CommandResult cmdResult = sendCommand(sourceCmd.concat(readCmd));
+	public IInputSelector getInput() {
+		ICommandResult cmdResult = sendCommand(sourceCmd.concat(readCmd));
 		inputSelector.setInputSelector(cmdResult.getValue());
 		return inputSelector;
 	}
@@ -129,7 +129,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	/* (non-Javadoc)
 	 * @see ch.bergernet.BeamerControlPlugin#getInterfaceInfo()
 	 */
-	public InterfaceInfo getInterfaceInfo() {
+	public IInterfaceInfo getInterfaceInfo() {
 		return ifaceInfo;
 	}
 
@@ -144,15 +144,15 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	/* (non-Javadoc)
 	 * @see ch.bergernet.BeamerControlPlugin#getPowerState()
 	 */
-	public PowerState getPowerState() {
-		CommandResult cmdResult = sendCommand(powerCmd.concat(readCmd));
+	public IPowerState getPowerState() {
+		ICommandResult cmdResult = sendCommand(powerCmd.concat(readCmd));
 		powerState.setPowerState(cmdResult.getValue());
 		return powerState;
 	}
 	
-	public CommandResult sendCommand(String cmd){
+	public ICommandResult sendCommand(String cmd){
 		String result = sendRawCommand(cmd);
-		CommandResult cmdResult = new CommandResult(result);
+		ICommandResult cmdResult = new CommandResult(result);
 		return(cmdResult);
 	}
 
@@ -161,7 +161,16 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	 */
 	public String sendRawCommand(String cmd) {
 		if(conState.isConnected()){
-			return simulator.sim(cmd);
+			if(SIMULATE){
+				return simulator.sim(cmd);			
+			} else {
+		        try {			
+		        	return beamerClient.send(cmd);
+		        } catch (IOException e) {
+		        	System.out.println("sendRawCommand failed: " + e.getLocalizedMessage());
+		            e.printStackTrace();
+		        }
+			}
 		}
 		return "not connected!";
 	}
@@ -182,7 +191,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	/* (non-Javadoc)
 	 * @see ch.bergernet.BeamerControlPlugin#setInput(ch.bergernet.InputSelector)
 	 */
-	public void setInput(InputSelector selector) {
+	public void setInput(IInputSelector selector) {
 		String cmd = sourceCmd.concat(String.valueOf(selector.getInputSelector()));
 		cmd = cmd.concat(")");
 		sendCommand(cmd);
@@ -191,7 +200,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	/* (non-Javadoc)
 	 * @see ch.bergernet.BeamerControlPlugin#setPower(ch.bergernet.PowerState)
 	 */
-	public void setPower(PowerState state) {
+	public void setPower(IPowerState state) {
 		String cmd = powerCmd.concat(String.valueOf(state.getPowerState()));
 		cmd = cmd.concat(")");
 		sendCommand(cmd);

@@ -1,35 +1,28 @@
-/**
- * 
- */
 package ch.bergernet.beamerControl;
 
-/**
- * @author dani
- * 
- */
 public interface BeamerControlPlugin {
 	
-	public CommandResult sendCommand(String cmd);
+	public ICommandResult sendCommand(String cmd);
 	
 	public String sendRawCommand(String cmd);
 	
 	public boolean connect(String URL);
 	
-	public ConnectionState getConnectionState();
+	public IConnectionState getConnectionState();
 	
-	public void setPower(PowerState state);
+	public void setPower(IPowerState state);
 	
-	public void setInput(InputSelector selector);
+	public void setInput(IInputSelector selector);
 	
 	public void setFreeze(boolean freeze);
 	
 	public String getModel();
 	
-	public PowerState getPowerState();
+	public IPowerState getPowerState();
 	
-	public InputSelector getInput();
+	public IInputSelector getInput();
 	
 	public boolean getFreeze();
 	
-	public InterfaceInfo getInterfaceInfo();
+	public IInterfaceInfo getInterfaceInfo();
 }
