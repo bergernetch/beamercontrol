@@ -9,7 +9,6 @@ import ch.bergernet.beamerControl.IConnectionState;
 import ch.bergernet.beamerControl.IInputSelector;
 import ch.bergernet.beamerControl.IInterfaceInfo;
 import ch.bergernet.beamerControl.IPowerState;
-import ch.bergernet.beamerSimulator.BeamerSimulator;
 
 public class InfocusControlPlugin implements BeamerControlPlugin {
 
@@ -31,7 +30,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 	
 	final static boolean SIMULATE = true;
 
-	BeamerSimulator simulator;
+	InfocusSimulator simulator;
 	TCPClient beamerClient = new TCPClient();
 	
 	/* (non-Javadoc)
@@ -55,7 +54,7 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 			System.out.println(uri.toString());
 			
 			if(SIMULATE){
-				simulator = new BeamerSimulator();
+				simulator = new InfocusSimulator();
 				ifaceInfo.setInterfaceInfo("connected to simulator: " + simulator.getInfo());				
 			} else {
 		        try {
