@@ -42,8 +42,12 @@ public class InfocusControlPlugin implements BeamerControlPlugin {
 		}
 		
 		try {
-			uri = URI.create(newConnectionURI);
-			System.out.println("will try to connect to: " + uri.getHost());
+			uri = new URI(newConnectionURI);
+			if (uri.getScheme().equals("tcp")){
+				 System.out.println("will try to connect to: " + uri.getHost());
+			} else {				
+				System.out.println("only tcp allowed, " + uri.getScheme() + " is not valid.");
+			}
 		} catch (Exception e) {
 			System.out.println(e.getLocalizedMessage());
 			return false;
